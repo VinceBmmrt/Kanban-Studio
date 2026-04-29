@@ -43,16 +43,16 @@ Statically build the Next.js frontend and serve it via FastAPI so the Kanban boa
 
 ### Steps
 
-- [ ] Add `output: "export"` to `frontend/next.config.ts` to enable static export
-- [ ] Run `npm run build` in `frontend/` to verify the export produces `frontend/out/`
-- [ ] Update `Dockerfile`:
+- [x] Add `output: "export"` to `frontend/next.config.ts` to enable static export
+- [x] Run `npm run build` in `frontend/` to verify the export produces `frontend/out/`
+- [x] Update `Dockerfile`:
   - Add Node.js build stage to build the frontend (`npm ci && npm run build`)
   - Copy `out/` into the Python image at `backend/static/`
-- [ ] Mount `backend/static/` via FastAPI `StaticFiles` at `/`, with `index.html` fallback
-- [ ] Remove the placeholder `GET /` HTML route (static files now handle it)
-- [ ] Rebuild the Docker image and confirm the Kanban board loads at `http://localhost:8000/`
-- [ ] Confirm existing unit tests pass: `npm run test:unit` inside `frontend/`
-- [ ] Confirm e2e tests pass against the Docker-served app: `npm run test:e2e`
+- [x] Mount `backend/static/` via FastAPI `StaticFiles` at `/`, with `index.html` fallback
+- [x] Remove the placeholder `GET /` HTML route (static files now handle it)
+- [x] Rebuild the Docker image and confirm the Kanban board loads at `http://localhost:8000/`
+- [x] Confirm existing unit tests pass: `npm run test:unit` inside `frontend/`
+- [x] Confirm e2e tests pass against the Docker-served app: `npm run test:e2e`
 
 ### Tests & Success Criteria
 
