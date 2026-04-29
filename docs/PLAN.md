@@ -69,16 +69,16 @@ Gate the Kanban board behind a login page using hardcoded credentials (`user` / 
 
 ### Steps
 
-- [ ] Create `frontend/src/app/login/page.tsx` with a login form (username + password fields, submit button)
-- [ ] Add a `POST /api/auth/login` backend route that accepts `{username, password}` and returns a session token (a simple UUID stored server-side in memory) on success, or 401 on failure
-- [ ] Add a `POST /api/auth/logout` route that invalidates the token
-- [ ] Add auth middleware in FastAPI that checks `Authorization: Bearer <token>` on all `/api/` routes except `/api/auth/*`
-- [ ] In the frontend, store the token in `localStorage` after login; attach it to all API calls via a shared fetch wrapper
-- [ ] In `frontend/src/app/layout.tsx` (or a client wrapper), redirect unauthenticated users to `/login`
-- [ ] Add a logout button to the Kanban header that calls `/api/auth/logout` and clears `localStorage`
-- [ ] Rebuild Docker image; re-run all tests
-- [ ] Write Vitest unit tests for the auth fetch wrapper and redirect logic
-- [ ] Write Playwright e2e tests: unauthenticated redirect, successful login, logout flow
+- [x] Create `frontend/src/app/login/page.tsx` with a login form (username + password fields, submit button)
+- [x] Add a `POST /api/auth/login` backend route that accepts `{username, password}` and returns a session token (a simple UUID stored server-side in memory) on success, or 401 on failure
+- [x] Add a `POST /api/auth/logout` route that invalidates the token
+- [x] Add auth middleware in FastAPI that checks `Authorization: Bearer <token>` on all `/api/` routes except `/api/auth/*`
+- [x] In the frontend, store the token in `localStorage` after login; attach it to all API calls via a shared fetch wrapper
+- [x] In `frontend/src/app/layout.tsx` (or a client wrapper), redirect unauthenticated users to `/login`
+- [x] Add a logout button to the Kanban header that calls `/api/auth/logout` and clears `localStorage`
+- [x] Rebuild Docker image; re-run all tests
+- [x] Write Vitest unit tests for the auth fetch wrapper and redirect logic
+- [x] Write Playwright e2e tests: unauthenticated redirect, successful login, logout flow
 
 ### Tests & Success Criteria
 

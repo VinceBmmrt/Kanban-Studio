@@ -1,5 +1,10 @@
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { AuthGuard } from "@/components/AuthGuard";
 
 export default function Home() {
-  return <KanbanBoard />;
+  return (
+    <AuthGuard>
+      <KanbanBoard />
+    </AuthGuard>
+  );
 }
