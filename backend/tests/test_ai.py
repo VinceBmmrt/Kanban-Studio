@@ -1,6 +1,4 @@
 import os
-import tempfile
-import importlib
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -16,24 +14,18 @@ def _make_parse_result(ai_response: AIResponse):
 
 
 @pytest.fixture
-def client(monkeypatch):
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-        db_path = f.name
-
+def client(monkeypatch, tmp_path):
+    db_path = str(tmp_path / "test.db")
     monkeypatch.setenv("DB_PATH", db_path)
     monkeypatch.setenv("OPENAI_API_KEY", os.environ.get("OPENAI_API_KEY", "test-key"))
 
-    import database; importlib.reload(database)
-    import routers.board; importlib.reload(routers.board)
-    import routers.auth; importlib.reload(routers.auth)
-    import routers.ai; importlib.reload(routers.ai)
-    import auth as auth_mod; auth_mod.tokens.clear()
-    import main; importlib.reload(main)
+    import auth as auth_mod
+    auth_mod.tokens.clear()
+    auth_mod._login_attempts.clear()
 
+    import main
     with TestClient(main.app) as c:
         yield c
-
-    os.unlink(db_path)
 
 
 def _login(client: TestClient) -> dict:

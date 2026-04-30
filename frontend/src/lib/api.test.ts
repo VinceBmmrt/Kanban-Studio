@@ -1,6 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { apiFetch, fetchBoard, apiRenameColumn, apiCreateCard, apiDeleteCard, apiMoveCard } from "./api";
-import { initialData } from "./kanban";
+
+const minimalBoard = {
+  columns: [
+    { id: "col-1", title: "A", cardIds: [] },
+    { id: "col-2", title: "B", cardIds: [] },
+    { id: "col-3", title: "C", cardIds: [] },
+    { id: "col-4", title: "D", cardIds: [] },
+    { id: "col-5", title: "E", cardIds: [] },
+  ],
+  cards: {},
+};
 
 describe("apiFetch", () => {
   beforeEach(() => {
@@ -34,7 +44,7 @@ describe("typed API helpers", () => {
   it("fetchBoard parses board data", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(new Response(JSON.stringify(initialData), { status: 200 }))
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(minimalBoard), { status: 200 }))
     );
     const board = await fetchBoard();
     expect(board.columns).toHaveLength(5);

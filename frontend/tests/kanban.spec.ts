@@ -23,27 +23,29 @@ test("loads the kanban board", async ({ page }) => {
 });
 
 test("adds a card to a column", async ({ page }) => {
+  const cardTitle = `E2E-add-${Date.now()}`;
   await login(page);
   const firstColumn = page.locator('[data-testid^="column-"]').first();
   await firstColumn.getByRole("button", { name: /add a card/i }).click();
-  await firstColumn.getByPlaceholder("Card title").fill("Playwright card");
+  await firstColumn.getByPlaceholder("Card title").fill(cardTitle);
   await firstColumn.getByPlaceholder("Details").fill("Added via e2e.");
   await firstColumn.getByRole("button", { name: /add card/i }).click();
-  await expect(firstColumn.getByText("Playwright card")).toBeVisible();
+  await expect(firstColumn.getByText(cardTitle)).toBeVisible();
 });
 
 test("added card persists after page reload", async ({ page }) => {
+  const cardTitle = `Persist-${Date.now()}`;
   await login(page);
   const firstColumn = page.locator('[data-testid^="column-"]').first();
   await firstColumn.getByRole("button", { name: /add a card/i }).click();
-  await firstColumn.getByPlaceholder("Card title").fill("Persistent card");
+  await firstColumn.getByPlaceholder("Card title").fill(cardTitle);
   await firstColumn.getByPlaceholder("Details").fill("Should survive reload.");
   await firstColumn.getByRole("button", { name: /add card/i }).click();
-  await expect(firstColumn.getByText("Persistent card")).toBeVisible();
+  await expect(firstColumn.getByText(cardTitle)).toBeVisible();
 
   await page.reload();
   await page.waitForURL("/");
-  await expect(page.locator('[data-testid^="column-"]').first().getByText("Persistent card")).toBeVisible();
+  await expect(page.locator('[data-testid^="column-"]').first().getByText(cardTitle)).toBeVisible();
 });
 
 test("moves a card between columns", async ({ page }) => {

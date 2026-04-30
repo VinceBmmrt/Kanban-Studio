@@ -6,29 +6,17 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
-def client(monkeypatch):
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-        db_path = f.name
-
+def client(monkeypatch, tmp_path):
+    db_path = str(tmp_path / "test.db")
     monkeypatch.setenv("DB_PATH", db_path)
 
-    # Reload modules so DB_PATH is picked up
-    import importlib
-    import database
-    importlib.reload(database)
-    import routers.board
-    importlib.reload(routers.board)
-    import routers.auth
-    importlib.reload(routers.auth)
     import auth as auth_mod
     auth_mod.tokens.clear()
-    import main
-    importlib.reload(main)
+    auth_mod._login_attempts.clear()
 
+    import main
     with TestClient(main.app) as c:
         yield c
-
-    os.unlink(db_path)
 
 
 def _login(client: TestClient) -> str:

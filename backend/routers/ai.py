@@ -54,18 +54,6 @@ def _board_for_prompt(conn, user_id: int) -> str:
     return json.dumps({"columns": data}, indent=2)
 
 
-@router.get("/test")
-async def ai_test():
-    logger.info("Sending test prompt to AI")
-    response = await client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": "What is 2+2?"}],
-    )
-    answer = response.choices[0].message.content
-    logger.info("AI response: %s", answer)
-    return {"answer": answer}
-
-
 @router.post("/chat", response_model=ChatResponse)
 async def ai_chat(body: ChatRequest, request: Request):
     user_id: int = request.state.user_id
@@ -106,8 +94,13 @@ async def ai_chat(body: ChatRequest, request: Request):
 
         if ai.update_cards:
             for uc in ai.update_cards:
+                # Verify the card belongs to the authenticated user's board
                 row = conn.execute(
-                    "SELECT title, details, column_id, position FROM cards WHERE id = ?", (uc.id,)
+                    "SELECT c.title, c.details, c.column_id, c.position FROM cards c "
+                    "JOIN columns col ON c.column_id = col.id "
+                    "JOIN boards b ON col.board_id = b.id "
+                    "WHERE c.id = ? AND b.user_id = ?",
+                    (uc.id, user_id),
                 ).fetchone()
                 if not row:
                     continue
@@ -135,7 +128,14 @@ async def ai_chat(body: ChatRequest, request: Request):
 
         if ai.delete_card_ids:
             for card_id in ai.delete_card_ids:
-                row = conn.execute("SELECT column_id, position FROM cards WHERE id=?", (card_id,)).fetchone()
+                # Verify the card belongs to the authenticated user's board
+                row = conn.execute(
+                    "SELECT c.column_id, c.position FROM cards c "
+                    "JOIN columns col ON c.column_id = col.id "
+                    "JOIN boards b ON col.board_id = b.id "
+                    "WHERE c.id = ? AND b.user_id = ?",
+                    (card_id, user_id),
+                ).fetchone()
                 if not row:
                     continue
                 conn.execute("DELETE FROM cards WHERE id=?", (card_id,))

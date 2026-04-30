@@ -4,8 +4,6 @@ from contextlib import contextmanager
 
 import bcrypt
 
-DB_PATH = os.getenv("DB_PATH", "kanban.db")
-
 _SEED_COLUMNS = [
     ("col-backlog", "Backlog", 0),
     ("col-discovery", "Discovery", 1),
@@ -27,7 +25,10 @@ _SEED_CARDS = [
 
 
 def init_db(path: str | None = None) -> None:
-    db = path or DB_PATH
+    db = path or os.getenv("DB_PATH", "data/kanban.db")
+    db_dir = os.path.dirname(db)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(db)
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript("""
@@ -77,7 +78,7 @@ def init_db(path: str | None = None) -> None:
 
 @contextmanager
 def get_db(path: str | None = None):
-    db = path or DB_PATH
+    db = path or os.getenv("DB_PATH", "data/kanban.db")
     conn = sqlite3.connect(db)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")

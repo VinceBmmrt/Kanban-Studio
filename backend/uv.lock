@@ -42,8 +42,12 @@ dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openai" },
-    { name = "pytest" },
     { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -52,9 +56,11 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.136.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "openai", specifier = ">=2.33.0" },
-    { name = "pytest", specifier = ">=9.0.3" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.46.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.0.3" }]
 
 [[package]]
 name = "bcrypt"

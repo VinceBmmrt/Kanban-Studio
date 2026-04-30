@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(pnpm test:unit)",
+      "Bash(uv lock *)",
+      "Bash(pnpm test:e2e)",
+      "Bash(uv run *)",
+      "Bash(pnpm test *)"
     ]
   }
 }

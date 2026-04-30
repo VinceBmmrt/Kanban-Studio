@@ -16,6 +16,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  if (!ready) return null;
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[var(--gray-text)]">
+          Loading…
+        </p>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 }

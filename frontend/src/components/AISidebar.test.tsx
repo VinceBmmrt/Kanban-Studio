@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AISidebar } from "@/components/AISidebar";
@@ -17,6 +17,10 @@ function renderSidebar() {
 }
 
 describe("AISidebar", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders the empty state prompt", () => {
     renderSidebar();
     expect(screen.getByText(/ask me to add/i)).toBeInTheDocument();

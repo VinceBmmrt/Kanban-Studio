@@ -2,7 +2,7 @@ import bcrypt
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
-from auth import create_token, revoke_token
+from auth import check_login_rate, create_token, revoke_token
 from database import get_db, get_user_by_username
 
 router = APIRouter(prefix="/api/auth")
@@ -14,7 +14,10 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login")
-def login(body: LoginRequest):
+def login(request: Request, body: LoginRequest):
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_login_rate(client_ip):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
     with get_db() as conn:
         user = get_user_by_username(conn, body.username)
     if not user or not bcrypt.checkpw(body.password.encode(), user["password_hash"].encode()):
