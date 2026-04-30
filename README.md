@@ -1,5 +1,7 @@
 # Kanban Studio
 
+![Kanban Studio](images/screenshot1.png)
+
 A single-board Kanban app with an AI assistant that can add, move, rename, and delete cards on command.
 
 **Stack:** FastAPI · SQLite · Next.js · dnd-kit · OpenAI
