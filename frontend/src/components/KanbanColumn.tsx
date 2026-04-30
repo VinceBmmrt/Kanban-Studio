@@ -8,6 +8,7 @@ import { NewCardForm } from "@/components/NewCardForm";
 type KanbanColumnProps = {
   column: Column;
   cards: Card[];
+  isOver: boolean;
   onRename: (columnId: string, title: string) => void;
   onRenameBlur: (columnId: string, title: string) => void;
   onAddCard: (columnId: string, title: string, details: string) => void;
@@ -17,12 +18,13 @@ type KanbanColumnProps = {
 export const KanbanColumn = ({
   column,
   cards,
+  isOver,
   onRename,
   onRenameBlur,
   onAddCard,
   onDeleteCard,
 }: KanbanColumnProps) => {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const { setNodeRef } = useDroppable({ id: column.id });
 
   return (
     <section

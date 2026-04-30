@@ -12,6 +12,7 @@ import {
   rectIntersection,
   type CollisionDetection,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
@@ -35,6 +36,7 @@ export const KanbanBoard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -65,9 +67,23 @@ export const KanbanBoard = () => {
     setActiveCardId(event.active.id as string);
   };
 
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { over } = event;
+    if (!over || !board) { setOverColumnId(null); return; }
+    const overId = over.id as string;
+    const isColumn = board.columns.some((col) => col.id === overId);
+    if (isColumn) {
+      setOverColumnId(overId);
+    } else {
+      const col = board.columns.find((col) => col.cardIds.includes(overId));
+      setOverColumnId(col?.id ?? null);
+    }
+  }, [board]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCardId(null);
+    setOverColumnId(null);
     if (!over || active.id === over.id || !board) return;
 
     const newColumns = moveCard(board.columns, active.id as string, over.id as string);
@@ -90,6 +106,7 @@ export const KanbanBoard = () => {
   };
 
   const handleRenameColumnBlur = useCallback((columnId: string, title: string) => {
+    if (!title.trim()) return;
     apiRenameColumn(columnId, title).catch(() => setError("Failed to rename column."));
   }, []);
 
@@ -264,7 +281,9 @@ export const KanbanBoard = () => {
           sensors={sensors}
           collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={() => { setActiveCardId(null); setOverColumnId(null); }}
         >
           <section className="grid gap-6 lg:grid-cols-5">
             {board.columns.map((column) => (
@@ -272,6 +291,7 @@ export const KanbanBoard = () => {
                 key={column.id}
                 column={column}
                 cards={column.cardIds.map((cardId) => board.cards[cardId])}
+                isOver={overColumnId === column.id}
                 onRename={handleRenameColumn}
                 onRenameBlur={handleRenameColumnBlur}
                 onAddCard={handleAddCard}
