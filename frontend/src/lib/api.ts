@@ -1,9 +1,9 @@
-import { getToken } from "./auth";
+import { getToken, clearToken } from "./auth";
 import type { BoardData, Card } from "./kanban";
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = getToken();
-  return fetch(path, {
+  const res = await fetch(path, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -11,6 +11,11 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
       ...(init.headers as Record<string, string> | undefined),
     },
   });
+  if (res.status === 401) {
+    clearToken();
+    window.location.replace("/login");
+  }
+  return res;
 }
 
 export async function fetchBoard(): Promise<BoardData> {
