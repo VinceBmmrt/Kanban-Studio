@@ -1,8 +1,11 @@
 import os
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+
+load_dotenv()
 
 from auth import AuthMiddleware
 from database import init_db

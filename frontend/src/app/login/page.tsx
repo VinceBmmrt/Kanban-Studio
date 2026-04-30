@@ -21,19 +21,26 @@ export default function LoginPage() {
     const username = (form.elements.namedItem("username") as HTMLInputElement).value;
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    setLoading(false);
-    if (res.ok) {
-      const { token } = await res.json();
-      setToken(token);
-      router.replace("/");
-    } else {
-      setError("Invalid username or password.");
+      if (res.ok) {
+        const { token } = await res.json();
+        setToken(token);
+        router.replace("/");
+      } else if (res.status === 401) {
+        setError("Invalid username or password.");
+      } else {
+        setError("Server error. Is the backend running?");
+      }
+    } catch {
+      setError("Cannot reach server. Is the backend running?");
+    } finally {
+      setLoading(false);
     }
   };
 
