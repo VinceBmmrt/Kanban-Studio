@@ -48,3 +48,22 @@ export async function apiMoveCard(cardId: string, columnId: string, position: nu
   });
   if (!res.ok) throw new Error("Failed to move card");
 }
+
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+export type CreatedCard = { id: string; column_id: string; title: string; details: string };
+export type CardUpdate = { id: string; title?: string | null; details?: string | null; column_id?: string | null };
+export type ChatResponse = {
+  message: string;
+  new_cards?: CreatedCard[] | null;
+  update_cards?: CardUpdate[] | null;
+  delete_card_ids?: string[] | null;
+};
+
+export async function apiChat(messages: ChatMessage[]): Promise<ChatResponse> {
+  const res = await apiFetch("/api/ai/chat", {
+    method: "POST",
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) throw new Error("Failed to get AI response");
+  return res.json();
+}

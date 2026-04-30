@@ -14,6 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
+import { AISidebar } from "@/components/AISidebar";
 import { moveCard, type BoardData } from "@/lib/kanban";
 import { clearToken } from "@/lib/auth";
 import {
@@ -23,6 +24,7 @@ import {
   apiCreateCard,
   apiDeleteCard,
   apiMoveCard,
+  type ChatResponse,
 } from "@/lib/api";
 
 export const KanbanBoard = () => {
@@ -31,6 +33,7 @@ export const KanbanBoard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchBoard()
@@ -46,9 +49,7 @@ export const KanbanBoard = () => {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
   const cardsById = useMemo(() => board?.cards ?? {}, [board?.cards]);
@@ -60,7 +61,6 @@ export const KanbanBoard = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCardId(null);
-
     if (!over || active.id === over.id || !board) return;
 
     const newColumns = moveCard(board.columns, active.id as string, over.id as string);
@@ -119,6 +119,56 @@ export const KanbanBoard = () => {
     apiDeleteCard(cardId).catch(() => setError("Failed to delete card."));
   };
 
+  const handleAIMutation = useCallback((resp: ChatResponse) => {
+    setBoard((prev) => {
+      if (!prev) return prev;
+      let { columns, cards } = prev;
+
+      if (resp.new_cards) {
+        for (const nc of resp.new_cards) {
+          cards = { ...cards, [nc.id]: { id: nc.id, title: nc.title, details: nc.details } };
+          columns = columns.map((col) =>
+            col.id === nc.column_id ? { ...col, cardIds: [...col.cardIds, nc.id] } : col
+          );
+        }
+      }
+
+      if (resp.update_cards) {
+        for (const uc of resp.update_cards) {
+          if (!cards[uc.id]) continue;
+          cards = {
+            ...cards,
+            [uc.id]: {
+              ...cards[uc.id],
+              ...(uc.title != null ? { title: uc.title } : {}),
+              ...(uc.details != null ? { details: uc.details } : {}),
+            },
+          };
+          if (uc.column_id) {
+            const src = columns.find((col) => col.cardIds.includes(uc.id));
+            if (src && src.id !== uc.column_id) {
+              columns = columns.map((col) => {
+                if (col.id === src.id) return { ...col, cardIds: col.cardIds.filter((id) => id !== uc.id) };
+                if (col.id === uc.column_id) return { ...col, cardIds: [...col.cardIds, uc.id] };
+                return col;
+              });
+            }
+          }
+        }
+      }
+
+      if (resp.delete_card_ids) {
+        for (const id of resp.delete_card_ids) {
+          const { [id]: _, ...rest } = cards;
+          cards = rest;
+          columns = columns.map((col) => ({ ...col, cardIds: col.cardIds.filter((cid) => cid !== id) }));
+        }
+      }
+
+      return { ...prev, columns, cards };
+    });
+  }, []);
+
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
 
   if (loading) {
@@ -168,6 +218,14 @@ export const KanbanBoard = () => {
                   One board. Five columns. Zero clutter.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen((o) => !o)}
+                aria-label="Toggle AI sidebar"
+                className="rounded-xl border border-[var(--stroke)] bg-[var(--secondary-purple)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:brightness-110"
+              >
+                AI
+              </button>
               <button
                 type="button"
                 onClick={handleLogout}
@@ -223,6 +281,10 @@ export const KanbanBoard = () => {
           </DragOverlay>
         </DndContext>
       </main>
+
+      {sidebarOpen && (
+        <AISidebar onMutation={handleAIMutation} onClose={() => setSidebarOpen(false)} />
+      )}
     </div>
   );
 };

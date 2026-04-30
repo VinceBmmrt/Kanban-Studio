@@ -8,6 +8,14 @@ async function login(page: Page) {
   await page.waitForURL("/");
 }
 
+test("AI sidebar opens and closes", async ({ page }) => {
+  await login(page);
+  await page.getByRole("button", { name: /toggle ai sidebar/i }).click();
+  await expect(page.getByText("AI Assistant")).toBeVisible();
+  await page.getByRole("button", { name: /close ai sidebar/i }).click();
+  await expect(page.getByText("AI Assistant")).not.toBeVisible();
+});
+
 test("loads the kanban board", async ({ page }) => {
   await login(page);
   await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible();
