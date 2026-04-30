@@ -8,7 +8,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -51,6 +53,11 @@ export const KanbanBoard = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
+
+  const collisionDetection: CollisionDetection = useCallback((args) => {
+    const pointer = pointerWithin(args);
+    return pointer.length > 0 ? pointer : rectIntersection(args);
+  }, []);
 
   const cardsById = useMemo(() => board?.cards ?? {}, [board?.cards]);
 
@@ -255,7 +262,7 @@ export const KanbanBoard = () => {
 
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
