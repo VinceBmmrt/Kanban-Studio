@@ -1,8 +1,22 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
-  output: "export",
+  ...(!isDev ? { output: "export" } : {}),
   trailingSlash: true,
+  ...(isDev
+    ? {
+        async rewrites() {
+          return [
+            {
+              source: "/api/:path*",
+              destination: "http://localhost:8001/api/:path*",
+            },
+          ];
+        },
+      }
+    : {}),
 };
 
 export default nextConfig;

@@ -3,21 +3,22 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-tokens: set[str] = set()
+# token → user_id
+tokens: dict[str, int] = {}
 
 
-def create_token() -> str:
+def create_token(user_id: int) -> str:
     token = str(uuid.uuid4())
-    tokens.add(token)
+    tokens[token] = user_id
     return token
 
 
 def revoke_token(token: str) -> None:
-    tokens.discard(token)
+    tokens.pop(token, None)
 
 
-def is_valid_token(token: str) -> bool:
-    return token in tokens
+def get_token_user_id(token: str) -> int | None:
+    return tokens.get(token)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -26,6 +27,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if path.startswith("/api/") and not path.startswith("/api/auth/"):
             auth = request.headers.get("Authorization", "")
             token = auth.removeprefix("Bearer ").strip()
-            if not is_valid_token(token):
+            user_id = get_token_user_id(token)
+            if user_id is None:
                 return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+            request.state.user_id = user_id
         return await call_next(request)

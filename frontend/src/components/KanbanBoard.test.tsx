@@ -1,21 +1,43 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
 import { KanbanBoard } from "@/components/KanbanBoard";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 
+const mockBoardData = vi.hoisted(() => ({
+  columns: [
+    { id: "col-backlog", title: "Backlog", cardIds: [] },
+    { id: "col-discovery", title: "Discovery", cardIds: [] },
+    { id: "col-progress", title: "In Progress", cardIds: [] },
+    { id: "col-review", title: "Review", cardIds: [] },
+    { id: "col-done", title: "Done", cardIds: [] },
+  ],
+  cards: {},
+}));
+
+vi.mock("@/lib/api", () => ({
+  apiFetch: vi.fn().mockResolvedValue(new Response(null, { status: 200 })),
+  fetchBoard: vi.fn().mockResolvedValue(mockBoardData),
+  apiRenameColumn: vi.fn().mockResolvedValue(undefined),
+  apiCreateCard: vi.fn().mockImplementation((_colId: string, title: string, details: string) =>
+    Promise.resolve({ id: "card-new", title, details })
+  ),
+  apiDeleteCard: vi.fn().mockResolvedValue(undefined),
+  apiMoveCard: vi.fn().mockResolvedValue(undefined),
+}));
+
 const getFirstColumn = () => screen.getAllByTestId(/column-/i)[0];
 
 describe("KanbanBoard", () => {
-  it("renders five columns", () => {
+  it("renders five columns", async () => {
     render(<KanbanBoard />);
-    expect(screen.getAllByTestId(/column-/i)).toHaveLength(5);
+    expect(await screen.findAllByTestId(/column-/i)).toHaveLength(5);
   });
 
   it("renames a column", async () => {
     render(<KanbanBoard />);
+    await screen.findAllByTestId(/column-/i);
     const column = getFirstColumn();
     const input = within(column).getByLabelText("Column title");
     await userEvent.clear(input);
@@ -25,6 +47,7 @@ describe("KanbanBoard", () => {
 
   it("adds and removes a card", async () => {
     render(<KanbanBoard />);
+    await screen.findAllByTestId(/column-/i);
     const column = getFirstColumn();
     const addButton = within(column).getByRole("button", {
       name: /add a card/i,

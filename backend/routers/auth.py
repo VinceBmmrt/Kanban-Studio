@@ -1,6 +1,9 @@
+import bcrypt
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+
 from auth import create_token, revoke_token
+from database import get_db, get_user_by_username
 
 router = APIRouter(prefix="/api/auth")
 
@@ -12,9 +15,11 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 def login(body: LoginRequest):
-    if body.username != "user" or body.password != "password":
+    with get_db() as conn:
+        user = get_user_by_username(conn, body.username)
+    if not user or not bcrypt.checkpw(body.password.encode(), user["password_hash"].encode()):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"token": create_token()}
+    return {"token": create_token(user["id"])}
 
 
 @router.post("/logout")

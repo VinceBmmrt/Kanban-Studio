@@ -5,6 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "bcrypt>=5.0.0",
     "fastapi>=0.136.1",
+    "httpx>=0.28.1",
+    "openai>=2.33.0",
+    "pytest>=9.0.3",
     "uvicorn[standard]>=0.46.0",
 ]

@@ -119,22 +119,22 @@ Implement all Kanban API routes backed by SQLite; full backend test coverage.
 
 ### Steps
 
-- [ ] Add SQLite dependency: `uv add aiosqlite` (or use stdlib `sqlite3` synchronously)
-- [ ] Create `backend/database.py`: init DB function that creates all tables from the schema if they don't exist; seed the hardcoded `user` / `password` user on first run
-- [ ] Create `backend/models.py`: dataclasses / Pydantic models for Board, Column, Card
-- [ ] Implement API routes in `backend/routers/board.py`:
+- [x] Add SQLite dependency: `uv add aiosqlite` (or use stdlib `sqlite3` synchronously)
+- [x] Create `backend/database.py`: init DB function that creates all tables from the schema if they don't exist; seed the hardcoded `user` / `password` user on first run
+- [x] Create `backend/models.py`: dataclasses / Pydantic models for Board, Column, Card
+- [x] Implement API routes in `backend/routers/board.py`:
   - `GET /api/board` — return the full board (columns + cards) for the authenticated user
   - `PUT /api/board/column/{column_id}` — rename a column
   - `POST /api/board/card` — create a card in a column
   - `PUT /api/board/card/{card_id}` — update card title/details
   - `DELETE /api/board/card/{card_id}` — delete a card
   - `PUT /api/board/card/{card_id}/move` — move card to a new column + position
-- [ ] Mount the router in `main.py`
-- [ ] Write `backend/tests/test_board.py` using pytest + `httpx.AsyncClient` (test client):
+- [x] Mount the router in `main.py`
+- [x] Write `backend/tests/test_board.py` using pytest + `httpx.AsyncClient` (test client):
   - Test each route: happy path and error cases
   - Confirm DB is created on startup
   - Use an in-memory or temp-file SQLite DB for tests
-- [ ] Run tests: `uv run pytest`
+- [x] Run tests: `uv run pytest`
 
 ### Tests & Success Criteria
 
@@ -151,14 +151,14 @@ Wire the frontend to the real API so the Kanban board is fully persistent.
 
 ### Steps
 
-- [ ] Create `frontend/src/lib/api.ts`: a fetch wrapper that attaches the auth token from `localStorage` to all requests
-- [ ] On Kanban board mount, call `GET /api/board` and populate state (remove `initialData` seeding)
-- [ ] Replace all local state mutations (add card, delete card, rename column, move card) with API calls followed by local state update on success
-- [ ] Display a loading skeleton while the board is fetching
-- [ ] On API error, show a minimal inline error message
+- [x] Create `frontend/src/lib/api.ts`: a fetch wrapper that attaches the auth token from `localStorage` to all requests
+- [x] On Kanban board mount, call `GET /api/board` and populate state (remove `initialData` seeding)
+- [x] Replace all local state mutations (add card, delete card, rename column, move card) with API calls followed by local state update on success
+- [x] Display a loading skeleton while the board is fetching
+- [x] On API error, show a minimal inline error message
 - [ ] Rebuild Docker image; test manually in browser
-- [ ] Update Vitest unit tests to mock the API module
-- [ ] Update Playwright e2e tests: confirm card added in one session persists after page reload
+- [x] Update Vitest unit tests to mock the API module
+- [x] Update Playwright e2e tests: confirm card added in one session persists after page reload
 
 ### Tests & Success Criteria
 
@@ -177,11 +177,11 @@ Connect the backend to the AI via OpenAI-compatible API (OpenRouter); confirm wi
 
 ### Steps
 
-- [ ] Add openai SDK: `uv add openai`
-- [ ] Create `backend/ai.py`: initialise `openai.AsyncOpenAI` with `base_url="https://openrouter.ai/api/v1"` and `api_key` from env `OPENAI_API_KEY`; use model `openai/gpt-oss-120b`
-- [ ] Add `GET /api/ai/test` route that sends the message `"What is 2+2?"` and returns the AI's response as `{"answer": "..."}`
-- [ ] Pass `OPENAI_API_KEY` through to the container via `docker-compose.yml` env
-- [ ] Test manually: `curl http://localhost:8000/api/ai/test`
+- [x] Add openai SDK: `uv add openai`
+- [x] Create `backend/ai.py`: initialise `openai.AsyncOpenAI` with `api_key` from env `OPENAI_API_KEY`; use model `gpt-4o-mini` via OpenAI API
+- [x] Add `GET /api/ai/test` route that sends the message `"What is 2+2?"` and returns the AI's response as `{"answer": "..."}`
+- [x] Pass `OPENAI_API_KEY` through to the container via `docker-compose.yml` env_file
+- [x] Test manually: confirmed "2 + 2 equals 4."
 
 ### Tests & Success Criteria
 
@@ -197,18 +197,19 @@ Extend the AI route to accept conversation history, include the full board as co
 
 ### Steps
 
-- [ ] Define Pydantic models for structured output:
-  - `CardUpdate`: `id`, `title?`, `details?`, `column_id?`, `position?`
+- [x] Define Pydantic models for structured output:
+  - `CardUpdate`: `id`, `title?`, `details?`, `column_id?`
   - `NewCard`: `title`, `details`, `column_id`
   - `AIResponse`: `message` (str), `new_cards?` (list[NewCard]), `update_cards?` (list[CardUpdate]), `delete_card_ids?` (list[str])
-- [ ] Create `POST /api/ai/chat`:
+  - `CreatedCard` / `ChatResponse`: returned to frontend with DB-generated card ids
+- [x] Create `POST /api/ai/chat`:
   - Accept `{messages: [{role, content}]}` (full conversation history from frontend)
   - Fetch the current board from DB and serialize to JSON
   - Build system prompt including board JSON and instructions on when/how to return board mutations
   - Call AI with structured output mode (response_format using JSON schema)
   - If response includes board mutations, apply them to the DB before returning
-  - Return `AIResponse` to the client
-- [ ] Write `backend/tests/test_ai.py`:
+  - Return `ChatResponse` to the client
+- [x] Write `backend/tests/test_ai.py`:
   - Mock the openai client
   - Test that board JSON is included in the system prompt
   - Test that returned mutations are applied to the DB
