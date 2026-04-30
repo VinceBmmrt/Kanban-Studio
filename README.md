@@ -29,7 +29,7 @@ Default credentials: `user` / `password`
 
 - **Drag & drop** cards across five columns
 - **Inline rename** columns (saved on blur)
-- **AI sidebar** — type a prompt, the board updates live
+- **AI sidebar** — describe what you want in plain English and the board updates instantly. The AI understands context (your current columns and cards) and can create cards, move them between columns, rename them, or delete them — all in one message. Powered by GPT-4o mini with structured outputs so mutations are applied directly, no copy-pasting required.
 - **Persistent** — SQLite on disk, survives restarts
 
 ---
