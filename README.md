@@ -10,10 +10,23 @@ A single-board Kanban app with an AI assistant that can add, move, rename, and d
 
 ## Get started
 
-**Dev** (two servers, hot reload)
+**Dev — one command (Windows)**
 ```
 scripts\dev.bat
 ```
+Opens two terminal windows (backend + frontend) with hot reload.
+
+**Dev — manual**
+```bash
+# terminal 1 — backend (port 8001)
+cd backend
+uv run uvicorn main:app --reload --port 8001
+
+# terminal 2 — frontend (port 3000)
+cd frontend
+pnpm dev
+```
+
 Frontend → http://localhost:3000  
 Backend → http://localhost:8001
 
