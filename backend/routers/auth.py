@@ -7,6 +7,9 @@ from database import get_db, get_user_by_username
 
 router = APIRouter(prefix="/api/auth")
 
+# Always run bcrypt even for unknown usernames to prevent timing-based enumeration.
+_DUMMY_HASH = bcrypt.hashpw(b"dummy", bcrypt.gensalt()).decode()
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -20,7 +23,8 @@ def login(request: Request, body: LoginRequest):
         raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
     with get_db() as conn:
         user = get_user_by_username(conn, body.username)
-    if not user or not bcrypt.checkpw(body.password.encode(), user["password_hash"].encode()):
+    pw_hash = user["password_hash"].encode() if user else _DUMMY_HASH.encode()
+    if not user or not bcrypt.checkpw(body.password.encode(), pw_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return {"token": create_token(user["id"])}
 

@@ -14,7 +14,15 @@ _RATE_WINDOW = int(os.getenv("LOGIN_RATE_WINDOW", "60"))   # seconds
 _RATE_LIMIT = int(os.getenv("LOGIN_RATE_LIMIT", "20"))     # max attempts per window
 
 
+def _purge_expired_tokens() -> None:
+    now = time.time()
+    expired = [tok for tok, (_, exp) in list(tokens.items()) if now > exp]
+    for tok in expired:
+        tokens.pop(tok, None)
+
+
 def create_token(user_id: int) -> str:
+    _purge_expired_tokens()
     token = str(uuid.uuid4())
     tokens[token] = (user_id, time.time() + TOKEN_TTL)
     return token
@@ -38,8 +46,13 @@ def get_token_user_id(token: str) -> int | None:
 def check_login_rate(ip: str) -> bool:
     """Return False if the IP has exceeded the login rate limit."""
     now = time.time()
-    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < _RATE_WINDOW]
-    if len(_login_attempts[ip]) >= _RATE_LIMIT:
+    attempts = [t for t in _login_attempts.get(ip, []) if now - t < _RATE_WINDOW]
+    if len(attempts) >= _RATE_LIMIT:
+        _login_attempts[ip] = attempts
         return False
-    _login_attempts[ip].append(now)
+    attempts.append(now)
+    if attempts:
+        _login_attempts[ip] = attempts
+    else:
+        _login_attempts.pop(ip, None)
     return True

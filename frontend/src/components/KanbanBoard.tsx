@@ -92,9 +92,9 @@ export const KanbanBoard = () => {
 
     const position = newColumn.cardIds.indexOf(active.id as string);
     setBoard((prev) => (prev ? { ...prev, columns: newColumns } : prev));
-    apiMoveCard(active.id as string, newColumn.id, position).catch(() =>
-      setError("Failed to move card.")
-    );
+    apiMoveCard(active.id as string, newColumn.id, position)
+      .then(() => setError(null))
+      .catch(() => setError("Failed to move card."));
   };
 
   const handleRenameColumn = (columnId: string, title: string) => {
@@ -107,7 +107,9 @@ export const KanbanBoard = () => {
 
   const handleRenameColumnBlur = useCallback((columnId: string, title: string) => {
     if (!title.trim()) return;
-    apiRenameColumn(columnId, title).catch(() => setError("Failed to rename column."));
+    apiRenameColumn(columnId, title)
+      .then(() => setError(null))
+      .catch(() => setError("Failed to rename column."));
   }, []);
 
   const handleAddCard = async (columnId: string, title: string, details: string) => {
@@ -124,6 +126,7 @@ export const KanbanBoard = () => {
             }
           : prev
       );
+      setError(null);
     } catch {
       setError("Failed to add card.");
     }
@@ -140,7 +143,9 @@ export const KanbanBoard = () => {
         ),
       };
     });
-    apiDeleteCard(cardId).catch(() => setError("Failed to delete card."));
+    apiDeleteCard(cardId)
+      .then(() => setError(null))
+      .catch(() => setError("Failed to delete card."));
   };
 
   const handleAIMutation = useCallback((resp: ChatResponse) => {
@@ -290,7 +295,7 @@ export const KanbanBoard = () => {
               <KanbanColumn
                 key={column.id}
                 column={column}
-                cards={column.cardIds.map((cardId) => board.cards[cardId])}
+                cards={column.cardIds.map((cardId) => board.cards[cardId]).filter((c): c is NonNullable<typeof c> => c != null)}
                 isOver={overColumnId === column.id}
                 onRename={handleRenameColumn}
                 onRenameBlur={handleRenameColumnBlur}

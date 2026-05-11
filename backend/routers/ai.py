@@ -81,6 +81,13 @@ async def ai_chat(body: ChatRequest, request: Request):
     with get_db() as conn:
         if ai.new_cards:
             for nc in ai.new_cards:
+                col = conn.execute(
+                    "SELECT col.id FROM columns col JOIN boards b ON col.board_id = b.id "
+                    "WHERE col.id = ? AND b.user_id = ?",
+                    (nc.column_id, user_id),
+                ).fetchone()
+                if not col:
+                    continue
                 card_id = f"card-{uuid.uuid4().hex[:8]}"
                 max_pos = conn.execute(
                     "SELECT COALESCE(MAX(position), -1) FROM cards WHERE column_id = ?",
